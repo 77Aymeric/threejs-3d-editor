@@ -47,19 +47,23 @@ function importRecursif(root) {
         let geo = new THREE.BoxGeometry(1, 1, 1);
         if (m.geometry.type.includes('Cylinder')) {
             type = 'CylinderGeometry';
-            geo = new THREE.CylinderGeometry(0.5, 0.5, 1, 32);
+            const radialSegments = (m.geometry.parameters && m.geometry.parameters.radialSegments) || 32;
+            geo = new THREE.CylinderGeometry(0.5, 0.5, 1, radialSegments);
+        } else if (m.geometry.type.includes('Sphere')) {
+            type = 'SphereGeometry';
+            geo = new THREE.SphereGeometry(0.5, 32, 32);
+        } else if (m.geometry.type.includes('Plane')) {
+            type = 'PlaneGeometry';
+            geo = new THREE.PlaneGeometry(1, 1);
         }
-        else { if (m.geometry.type.includes('Plane')) s.z *= 0.05; }
 
         if (m.geometry.parameters) {
-            if (m.geometry.parameters.width) s.x *= m.geometry.parameters.width;
-            if (m.geometry.parameters.height) s.y *= m.geometry.parameters.height;
-            if (m.geometry.parameters.depth) s.z *= m.geometry.parameters.depth;
-            if (m.geometry.parameters.radiusTop) { const r = m.geometry.parameters.radiusTop * 2; s.x *= r; s.z *= r; }
-            if (m.geometry.parameters.radialSegments) {
-                if (m.geometry.parameters.radialSegments === 3) { geo = new THREE.CylinderGeometry(0.5, 0.5, 1, 3); }
-                else { geo = new THREE.CylinderGeometry(0.5, 0.5, 1, m.geometry.parameters.radialSegments); }
-            }
+            const pms = m.geometry.parameters;
+            if (pms.width) s.x *= pms.width;
+            if (pms.height) s.y *= pms.height;
+            if (pms.depth) s.z *= pms.depth;
+            if (pms.radius) { const r = pms.radius * 2; s.x *= r; s.y *= r; s.z *= r; }
+            if (pms.radiusTop) { const r = pms.radiusTop * 2; s.x *= r; s.z *= r; }
         }
         let mat = m.material; if (Array.isArray(mat)) mat = mat[0];
         const obj = creerObjet(geo, type, 'import', mat, { position: p, quaternion: q, scale: s });
@@ -84,10 +88,17 @@ export function exporterCode() {
         const t = obj.userData.type;
         const n = obj.name.replace(/[^a-zA-Z0-9]/g, '_') || 'obj' + i;
         let geometryCode;
-        if (t === 'BoxGeometry') { geometryCode = 'new THREE.BoxGeometry(1, 1, 1)'; }
-        else if (t === 'CylinderGeometry') {
+        if (t === 'BoxGeometry') {
+            geometryCode = 'new THREE.BoxGeometry(1, 1, 1)';
+        } else if (t === 'SphereGeometry') {
+            geometryCode = 'new THREE.SphereGeometry(0.5, 32, 32)';
+        } else if (t === 'CylinderGeometry') {
             const segs = obj.geometry.parameters && obj.geometry.parameters.radialSegments ? obj.geometry.parameters.radialSegments : 32;
             geometryCode = `new THREE.CylinderGeometry(0.5, 0.5, 1, ${segs})`;
+        } else if (t === 'PlaneGeometry') {
+            geometryCode = 'new THREE.PlaneGeometry(1, 1)';
+        } else {
+            geometryCode = 'new THREE.BoxGeometry(1, 1, 1)';
         }
         js += `
             // ${n}

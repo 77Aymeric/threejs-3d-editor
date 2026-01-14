@@ -5,18 +5,25 @@ import { applyColorState, applyWireframeState } from './utils.js';
 import { pushHistory } from './history.js';
 
 export function ajouterAction(type) {
-    let geo, baseName;
+    let geo, baseName, geometryType;
     if (type === 'cube') {
         geo = new THREE.BoxGeometry(1, 1, 1);
         baseName = 'cube';
+        geometryType = 'BoxGeometry';
+    } else if (type === 'sphere') {
+        geo = new THREE.SphereGeometry(0.5, 32, 32);
+        baseName = 'sphere';
+        geometryType = 'SphereGeometry';
     } else if (type === 'triangle') {
         geo = new THREE.CylinderGeometry(0.5, 0.5, 1, 3);
         baseName = 'triangle';
+        geometryType = 'CylinderGeometry';
     } else {
         geo = new THREE.CylinderGeometry(0.5, 0.5, 1, 32);
         baseName = 'cylindre';
+        geometryType = 'CylinderGeometry';
     }
-    creerObjet(geo, type === 'cube' ? 'BoxGeometry' : 'CylinderGeometry', baseName);
+    creerObjet(geo, geometryType, baseName);
 }
 
 export function creerObjet(geometry, type, baseName, existingMat, existingTransform) {

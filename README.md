@@ -53,3 +53,5 @@ The project has been refactored into modular ES components for better readabilit
 - `src/editor/`: Core editor logic modules.
 - `src/ui/`: UI components and panels.
 - `src/styles/`: Global styles and Tailwind integration.
+
+> **Note**: For native browser compatibility, all local JavaScript imports must include the `.js` extension.

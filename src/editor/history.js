@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { state } from './state';
-import { updateUI, renderTree } from '../ui/ui';
-import { updateGizmo, degrouperSelection, grouperSelection } from './selection';
+import { state } from './state.js';
+import { updateUI, renderTree } from '../ui/ui.js';
+import { updateGizmo, degrouperSelection, grouperSelection } from './selection.js';
 
 export function pushHistory(action) {
     if (state.historyIndex < state.historyStack.length - 1) {

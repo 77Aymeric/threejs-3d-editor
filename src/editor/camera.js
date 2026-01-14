@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { state } from './state';
-import { onWindowResize } from './events';
+import { state } from './state.js';
+import { onWindowResize } from './events.js';
 
 export function toggleCamera() {
     const target = state.controls.target.clone();

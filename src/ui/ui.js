@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { state } from '../editor/state';
-import { updateSelection } from '../editor/selection';
+import { state } from '../editor/state.js';
+import { updateSelection } from '../editor/selection.js';
 
 export function toggleTree() {
     const panel = document.getElementById('ui-tree-panel');

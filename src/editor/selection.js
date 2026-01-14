@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { state } from './state';
-import { updateUI, renderTree } from '../ui/ui';
-import { applyColorState, applyWireframeState } from './utils';
+import { state } from './state.js';
+import { updateUI, renderTree } from '../ui/ui.js';
+import { applyColorState, applyWireframeState } from './utils.js';
 
 export function updateSelection(nouveauxObjets, append = false) {
     degrouperSelection();

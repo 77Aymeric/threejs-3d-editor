@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import { state } from './state';
-import { updateSelection } from './selection';
-import { handleArrowClick, animerVueVers } from './camera';
-import { setMode, toggleColors, toggleWireframes, toggleSpace, toggleSnap } from './utils';
-import { undo, redo, pushHistory } from './history';
-import { supprimerSelection, dupliquerSelection } from './objects';
-import { ouvrirModalImport } from './io';
+import { state } from './state.js';
+import { updateSelection } from './selection.js';
+import { handleArrowClick, animerVueVers } from './camera.js';
+import { setMode, toggleColors, toggleWireframes, toggleSpace, toggleSnap } from './utils.js';
+import { undo, redo, pushHistory } from './history.js';
+import { supprimerSelection, dupliquerSelection } from './objects.js';
+import { ouvrirModalImport } from './io.js';
 
 export function onPointerDown(event) {
     state.mouseOnDown.x = event.clientX;

@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import { state } from './state';
-import { updateSelection } from './selection';
-import { applyColorState, applyWireframeState } from './utils';
-import { pushHistory } from './history';
+import { state } from './state.js';
+import { updateSelection } from './selection.js';
+import { applyColorState, applyWireframeState } from './utils.js';
+import { pushHistory } from './history.js';
 
 export function ajouterAction(type) {
     let geo, baseName;
@@ -93,7 +93,7 @@ export function supprimerSelection() {
     const toRemove = [...state.selectionActuelle];
     pushHistory({ type: 'remove', object: toRemove });
     // Note: degrouperSelection handles detaching
-    import('./selection').then(m => m.degrouperSelection());
+    import('./selection.js').then(m => m.degrouperSelection());
     toRemove.forEach(obj => {
         state.scene.remove(obj);
         state.objetsEditables = state.objetsEditables.filter(o => o !== obj);

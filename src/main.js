@@ -1,15 +1,15 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
-import { state } from './editor/state';
-import { setupViewCube } from './editor/camera';
-import { onWindowResize, onPointerDown, onPointerUp, onPointerMove, onKeyDown, commencerDrag, terminerDrag } from './editor/events';
-import { updateUI, renderTree, toggleTree, majNom, majPositionParInput, majCouleur } from './ui/ui';
-import { undo, redo } from './editor/history';
-import { ajouterAction, dupliquerSelection, supprimerSelection } from './editor/objects';
-import { setMode, toggleSnap, toggleSpace, toggleColors, toggleWireframes } from './editor/utils';
-import { toggleCamera } from './editor/camera';
-import { ouvrirModalImport, fermerModalImport, executerImport, exporterCode } from './editor/io';
+import { state } from './editor/state.js';
+import { setupViewCube } from './editor/camera.js';
+import { onWindowResize, onPointerDown, onPointerUp, onPointerMove, onKeyDown, commencerDrag, terminerDrag } from './editor/events.js';
+import { updateUI, renderTree, toggleTree, majNom, majPositionParInput, majCouleur } from './ui/ui.js';
+import { undo, redo } from './editor/history.js';
+import { ajouterAction, dupliquerSelection, supprimerSelection } from './editor/objects.js';
+import { setMode, toggleSnap, toggleSpace, toggleColors, toggleWireframes } from './editor/utils.js';
+import { toggleCamera } from './editor/camera.js';
+import { ouvrirModalImport, fermerModalImport, executerImport, exporterCode } from './editor/io.js';
 
 function init() {
     const container = document.getElementById('canvas-container');
@@ -58,7 +58,7 @@ function init() {
         else terminerDrag();
     });
     state.transformControl.addEventListener('change', () => {
-        if (state.selectionActuelle.length > 0) import('./ui/ui').then(m => m.updateUIFromSelection());
+        if (state.selectionActuelle.length > 0) import('./ui/ui.js').then(m => m.updateUIFromSelection());
     });
     state.scene.add(state.transformControl);
 

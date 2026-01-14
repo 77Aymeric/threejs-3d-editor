@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { state } from './state';
+import { state } from './state.js';
 
 export function applyColorState(obj) {
     if (!state.showColors) {

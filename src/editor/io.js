@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { state } from './state';
-import { updateSelection, degrouperSelection, grouperSelection } from './selection';
-import { creerObjet } from './objects';
+import { state } from './state.js';
+import { updateSelection, degrouperSelection, grouperSelection } from './selection.js';
+import { creerObjet } from './objects.js';
 
 export function ouvrirModalImport() {
     document.getElementById('modal-import').style.display = 'flex';
@@ -68,7 +68,7 @@ function importRecursif(root) {
     state.scene.remove(root);
     updateSelection([]);
     if (nouveauxObjets.length > 0) {
-        import('./camera').then(cam => cam.focusSurObjets(nouveauxObjets));
+        import('./camera.js').then(cam => cam.focusSurObjets(nouveauxObjets));
     }
 }
 

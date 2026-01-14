@@ -9,6 +9,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Import Map for bare modules -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/examples/jsm/controls/OrbitControls": "https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js",
+                "three/examples/jsm/controls/TransformControls": "https://unpkg.com/three@0.128.0/examples/jsm/controls/TransformControls.js"
+            }
+        }
+    </script>
     <!-- Main Style -->
     <link rel="stylesheet" href="./src/styles/main.css">
     <style>

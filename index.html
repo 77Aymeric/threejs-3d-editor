@@ -156,6 +156,20 @@
         </div>
     </div>
 
+    <!-- MODAL EXPORT -->
+    <div id="modal-export" class="backdrop-blur-sm" style="display:none;">
+        <div class="modal-content shadow-2xl">
+            <h3 class="text-xl font-bold">Exporter le Code</h3>
+            <p class="text-sm text-gray-400">Copiez ce code et utilisez-le dans votre projet.</p>
+            <textarea id="export-area" readonly
+                style="height: 300px; font-family: monospace; font-size: 12px; margin-top: 10px;"></textarea>
+            <div class="flex gap-2 justify-end mt-4">
+                <button class="btn btn-secondary" onclick="fermerModalExport()">Fermer</button>
+                <button class="btn btn-success" onclick="copierExport()">Copier</button>
+            </div>
+        </div>
+    </div>
+
     <div id="canvas-container"></div>
 
     <!-- Main Module -->

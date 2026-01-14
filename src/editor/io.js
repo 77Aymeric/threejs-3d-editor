@@ -14,6 +14,10 @@ export function fermerModalImport() {
 export function executerImport() {
     let code = document.getElementById('import-area').value.trim();
     if (!code) return;
+
+    // Supprimer 'export' ou 'export default' au début si présent
+    code = code.replace(/^(export\s+default\s+|export\s+)/, '');
+
     const match = code.match(/function\s+([a-zA-Z0-9_$]+)\s*\(/);
     if (match && code.endsWith('}')) code += `\nreturn ${match[1]}();`;
     try {
@@ -76,17 +80,40 @@ function importRecursif(root) {
     }
 }
 
+export function fermerModalExport() {
+    document.getElementById('modal-export').style.display = 'none';
+}
+
+export function copierExport() {
+    const area = document.getElementById('export-area');
+    area.select();
+    area.setSelectionRange(0, 99999);
+    try {
+        navigator.clipboard.writeText(area.value);
+        const btn = document.querySelector('#modal-export .btn-success');
+        const oldText = btn.innerText;
+        btn.innerText = "Copié !";
+        setTimeout(() => btn.innerText = oldText, 2000);
+    } catch (e) {
+        document.execCommand('copy');
+    }
+}
+
 export function exporterCode() {
     const etaitGroupe = !!state.selectionGroup;
     degrouperSelection();
-    let js = "";
+
+    let js = "export function creerModele() {\n";
+    js += "    const group = new THREE.Group();\n";
+
     state.objetsEditables.forEach((obj, i) => {
         const p = obj.position, r = obj.rotation, s = obj.scale;
         let hexVal = obj.material.color.getHex();
         if (!state.showColors && obj.userData.savedColor !== undefined) { hexVal = obj.userData.savedColor; }
-        const c = '0x' + hexVal.toString(16);
+        const c = '0x' + hexVal.toString(16).padStart(6, '0');
         const t = obj.userData.type;
         const n = obj.name.replace(/[^a-zA-Z0-9]/g, '_') || 'obj' + i;
+
         let geometryCode;
         if (t === 'BoxGeometry') {
             geometryCode = 'new THREE.BoxGeometry(1, 1, 1)';
@@ -100,37 +127,32 @@ export function exporterCode() {
         } else {
             geometryCode = 'new THREE.BoxGeometry(1, 1, 1)';
         }
+
         js += `
-            // ${n}
-            {
-                const g = ${geometryCode};
-                const m = new THREE.MeshToonMaterial({color:${c}});
-                const o = new THREE.Mesh(g,m);
-                o.position.set(${p.x.toFixed(3)},${p.y.toFixed(3)},${p.z.toFixed(3)});
-                o.rotation.set(${r.x.toFixed(3)},${r.y.toFixed(3)},${r.z.toFixed(3)});
-                o.scale.set(${s.x.toFixed(3)},${s.y.toFixed(3)},${s.z.toFixed(3)});
-                o.castShadow=true; o.receiveShadow=true;
-                const edges = new THREE.EdgesGeometry(g);
-                const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 }));
-                o.add(line);
-                scene.add(o);
-            }`;
+    // ${n}
+    {
+        const g = ${geometryCode};
+        const m = new THREE.MeshToonMaterial({ color: ${c} });
+        const o = new THREE.Mesh(g, m);
+        o.position.set(${p.x.toFixed(3)}, ${p.y.toFixed(3)}, ${p.z.toFixed(3)});
+        o.rotation.set(${r.x.toFixed(3)}, ${r.y.toFixed(3)}, ${r.z.toFixed(3)});
+        o.scale.set(${s.x.toFixed(3)}, ${s.y.toFixed(3)}, ${s.z.toFixed(3)});
+        o.castShadow = true; 
+        o.receiveShadow = true;
+        
+        const edges = new THREE.EdgesGeometry(g);
+        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 }));
+        o.add(line);
+        group.add(o);
+    }\n`;
     });
+
+    js += "    return group;\n";
+    js += "}";
+
     if (etaitGroupe) grouperSelection();
-    const html = `<!DOCTYPE html><html><head><title>Export</title><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script><script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"><\/script></head><body style="margin:0"><script>
-            const scene=new THREE.Scene();scene.background=new THREE.Color(0x222222);
-            const camera=new THREE.PerspectiveCamera(50,window.innerWidth/window.innerHeight,0.1,1000);camera.position.set(8,8,8);
-            const r=new THREE.WebGLRenderer({antialias:true});r.setSize(window.innerWidth,window.innerHeight);r.shadowMap.enabled=true;document.body.appendChild(r.domElement);
-            new THREE.OrbitControls(camera,r.domElement);
-            scene.add(new THREE.AmbientLight(0xffffff,0.6));
-            const d=new THREE.DirectionalLight(0xffffff,0.8);d.position.set(10,20,10);d.castShadow=true;scene.add(d);
-            scene.add(new THREE.GridHelper(20,20,0x444444,0x333333));
-            ${js}
-            function animate(){requestAnimationFrame(animate);r.render(scene,camera);}animate();
-            window.onresize=()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();r.setSize(window.innerWidth,window.innerHeight);};
-            <\/script></body></html>`;
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-    a.download = 'export.html';
-    a.click();
+
+    const area = document.getElementById('export-area');
+    area.value = js;
+    document.getElementById('modal-export').style.display = 'flex';
 }

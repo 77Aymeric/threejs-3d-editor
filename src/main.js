@@ -9,7 +9,7 @@ import { undo, redo } from './editor/history.js';
 import { ajouterAction, dupliquerSelection, supprimerSelection } from './editor/objects.js';
 import { setMode, toggleSnap, toggleSpace, toggleColors, toggleWireframes } from './editor/utils.js';
 import { toggleCamera } from './editor/camera.js';
-import { ouvrirModalImport, fermerModalImport, executerImport, exporterCode } from './editor/io.js';
+import { ouvrirModalImport, fermerModalImport, executerImport, exporterCode, fermerModalExport, copierExport } from './editor/io.js';
 
 function init() {
     const container = document.getElementById('canvas-container');
@@ -82,6 +82,8 @@ function init() {
     window.fermerModalImport = fermerModalImport;
     window.executerImport = executerImport;
     window.exporterCode = exporterCode;
+    window.fermerModalExport = fermerModalExport;
+    window.copierExport = copierExport;
     window.toggleTree = toggleTree;
     window.dupliquerSelection = dupliquerSelection;
     window.supprimerSelection = supprimerSelection;

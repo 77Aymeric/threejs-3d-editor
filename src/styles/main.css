@@ -209,7 +209,8 @@ input[type="color"] {
 }
 
 /* Modal Import */
-#modal-import {
+#modal-import,
+#modal-export {
     display: none;
     position: fixed;
     top: 0;

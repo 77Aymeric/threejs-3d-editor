@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { state } from '../editor/state.js';
 import { updateSelection } from '../editor/selection.js';
 
+let anchorObject = null;
+
 export function toggleTree() {
     const panel = document.getElementById('ui-tree-panel');
     const btn = document.getElementById('tree-toggle-btn');
@@ -32,8 +34,32 @@ export function renderTree() {
             deplacerObjetListe(fromIndex, index);
         };
         item.onclick = (e) => {
-            if (e.target.tagName !== 'INPUT') {
-                updateSelection([obj], e.shiftKey);
+            if (e.target.tagName === 'INPUT') return;
+
+            // Initialize anchor from current selection if needed (e.g. selection made in 3D view)
+            if (!anchorObject && state.selectionActuelle.length > 0) {
+                anchorObject = state.selectionActuelle[state.selectionActuelle.length - 1];
+            }
+
+            if (e.shiftKey && anchorObject) {
+                const currentIdx = state.objetsEditables.indexOf(obj);
+                const anchorIdx = state.objetsEditables.indexOf(anchorObject);
+
+                if (anchorIdx !== -1 && currentIdx !== -1) {
+                    const start = Math.min(anchorIdx, currentIdx);
+                    const end = Math.max(anchorIdx, currentIdx);
+                    const range = state.objetsEditables.slice(start, end + 1);
+                    updateSelection(range, false);
+                    return;
+                }
+            }
+
+            if (e.metaKey || e.ctrlKey) {
+                updateSelection([obj], true);
+                anchorObject = obj;
+            } else {
+                updateSelection([obj], false);
+                anchorObject = obj;
             }
         };
 

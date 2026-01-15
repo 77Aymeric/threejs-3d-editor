@@ -107,3 +107,19 @@ export function supprimerSelection() {
     });
     updateSelection([]);
 }
+
+export function toutEffacer() {
+    if (state.objetsEditables.length === 0) return;
+    if (!confirm('Voulez-vous vraiment tout effacer ? Cette action est irréversible (sauf via Ctrl+Z).')) return;
+
+    const toRemove = [...state.objetsEditables];
+    pushHistory({ type: 'remove', object: toRemove });
+
+    import('./selection.js').then(m => m.updateSelection([]));
+
+    toRemove.forEach(obj => {
+        state.scene.remove(obj);
+    });
+    // Vider le tableau en gardant la référence
+    state.objetsEditables.length = 0;
+}

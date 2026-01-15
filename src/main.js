@@ -6,7 +6,7 @@ import { setupViewCube } from './editor/camera.js';
 import { onWindowResize, onPointerDown, onPointerUp, onPointerMove, onKeyDown, commencerDrag, terminerDrag } from './editor/events.js';
 import { updateUI, renderTree, toggleTree, majNom, majPositionParInput, majCouleur } from './ui/ui.js';
 import { undo, redo } from './editor/history.js';
-import { ajouterAction, dupliquerSelection, supprimerSelection } from './editor/objects.js';
+import { ajouterAction, dupliquerSelection, supprimerSelection, toutEffacer } from './editor/objects.js';
 import { setMode, toggleSnap, toggleSpace, toggleColors, toggleWireframes } from './editor/utils.js';
 import { toggleCamera } from './editor/camera.js';
 import { ouvrirModalImport, fermerModalImport, executerImport, exporterCode, fermerModalExport, copierExport } from './editor/io.js';
@@ -72,6 +72,7 @@ function init() {
     window.undo = undo;
     window.redo = redo;
     window.ajouterAction = ajouterAction;
+    window.toutEffacer = toutEffacer;
     window.setMode = setMode;
     window.toggleCamera = toggleCamera;
     window.toggleSnap = toggleSnap;

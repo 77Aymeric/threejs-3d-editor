@@ -164,6 +164,15 @@ body {
     background: #22c55e;
 }
 
+.btn-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+}
+
 .control-group {
     background: #2d2d2d;
     padding: 10px;

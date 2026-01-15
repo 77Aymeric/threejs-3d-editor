@@ -5,10 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Constructeur 3D Pro</title>
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS (Still kept for utility classes if needed, though most styles are custom now) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Fira+Code&display=swap"
+        rel="stylesheet">
     <!-- Import Map for bare modules -->
     <script type="importmap">
         {
@@ -21,65 +22,63 @@
     </script>
     <!-- Main Style -->
     <link rel="stylesheet" href="./src/styles/main.css">
-    <style>
-        body {
-            font-family: 'Outfit', sans-serif;
-        }
-    </style>
 </head>
 
-<body class="bg-[#1a1a1a] text-white">
+<body>
 
-    <!-- TOOLBAR -->
-    <div id="ui-toolbar" class="shadow-lg backdrop-blur-md">
-        <div class="flex gap-2 mr-4 border-r border-gray-600 pr-4">
-            <button class="btn btn-secondary" onclick="undo()" title="Annuler (Ctrl+Z)">↩</button>
-            <button class="btn btn-secondary" onclick="redo()" title="Rétablir (Ctrl+Y)">↪</button>
+    <!-- TOOLBAR (Floating) -->
+    <div id="ui-toolbar" class="panel-glass">
+        <!-- History Controls -->
+        <div class="text-left-controls">
+            <button class="btn btn-secondary" onclick="undo()" title="Annuler">↩</button>
+            <button class="btn btn-secondary" onclick="redo()" title="Rétablir">↪</button>
         </div>
 
-        <div class="flex gap-2 mr-4 border-r border-gray-600 pr-4">
-            <button class="btn" onclick="ajouterAction('cube')">+ Cube</button>
-            <button class="btn" onclick="ajouterAction('cylindre')">+ Cylindre</button>
-            <button class="btn" onclick="ajouterAction('sphere')">+ Sphère</button>
-            <button class="btn" onclick="ajouterAction('triangle')">+ Triangle</button>
+        <!-- Add Objects -->
+        <!-- Add Objects -->
+        <div class="text-left-controls">
+            <button class="btn btn-primary px-2" onclick="ajouterAction('cube')" title="Cube">+ Cube</button>
+            <button class="btn btn-primary px-2" onclick="ajouterAction('cylindre')" title="Cylindre">+ Cyl</button>
+            <button class="btn btn-primary px-2" onclick="ajouterAction('sphere')" title="Sphère">+ Sph</button>
+            <button class="btn btn-primary px-2" onclick="ajouterAction('triangle')" title="Triangle">+ Tri</button>
         </div>
 
-
-        <div class="flex gap-2 mr-4 border-r border-gray-600 pr-4">
-            <button class="btn btn-secondary" onclick="setMode('translate')" title="Déplacer (Z)">✛ (Z)</button>
-            <button class="btn btn-secondary" onclick="setMode('rotate')" title="Tourner (R)">↻ (R)</button>
-            <button class="btn btn-secondary" onclick="setMode('scale')" title="Redimensionner (S)">⤡ (S)</button>
+        <!-- Transformations -->
+        <div class="text-left-controls">
+            <button class="btn btn-secondary" onclick="setMode('translate')" title="Déplacer (Z)">✛</button>
+            <button class="btn btn-secondary" onclick="setMode('rotate')" title="Tourner (R)">↻</button>
+            <button class="btn btn-secondary" onclick="setMode('scale')" title="Redimensionner (S)">⤡</button>
         </div>
 
-        <div class="flex gap-2 mr-4 border-r border-gray-600 pr-4">
-            <button class="btn btn-secondary w-32" id="btn-cam" onclick="toggleCamera()">Cam: Persp</button>
+        <!-- Camera -->
+        <div class="text-left-controls">
+            <button class="btn btn-secondary w-24" id="btn-cam" onclick="toggleCamera()">Persp</button>
         </div>
 
-        <div class="flex gap-4 mr-4 items-center">
-            <label class="toggle-container bg-gray-800 px-3 py-1 rounded border border-gray-600">
-                <span class="text-xs">Aimant</span>
+        <!-- View Options (Text removed for space, relying on tooltips/icons check) -->
+        <!-- View Options (Compact with Labels) -->
+        <div class="flex gap-2 items-center ml-2 border-l border-white/10 pl-2">
+            <label class="toggle-container" title="Aimant">
+                <span class="text-[10px] font-bold opacity-70 mr-1">AIMANT</span>
                 <input type="checkbox" id="snap-toggle" class="toggle-checkbox" onchange="toggleSnap(this.checked)">
                 <div class="toggle-switch"></div>
             </label>
 
-            <label class="toggle-container bg-gray-800 px-3 py-1 rounded border border-gray-600"
-                title="Orientation des flèches : Monde ou Objet">
-                <span class="text-xs">Local</span>
+            <label class="toggle-container" title="Local / Monde">
+                <span class="text-[10px] font-bold opacity-70 mr-1">LOCAL</span>
                 <input type="checkbox" id="local-toggle" class="toggle-checkbox" onchange="toggleSpace(this.checked)">
                 <div class="toggle-switch"></div>
             </label>
 
-            <label class="toggle-container bg-gray-800 px-3 py-1 rounded border border-gray-600"
-                title="Afficher les couleurs / Mode Gris">
-                <span class="text-xs">Couleurs</span>
+            <label class="toggle-container" title="Couleurs">
+                <span class="text-[10px] font-bold opacity-70 mr-1">COL</span>
                 <input type="checkbox" id="colors-toggle" class="toggle-checkbox" checked
                     onchange="toggleColors(this.checked)">
                 <div class="toggle-switch"></div>
             </label>
 
-            <label class="toggle-container bg-gray-800 px-3 py-1 rounded border border-gray-600"
-                title="Afficher les lignes (Wireframes)">
-                <span class="text-xs">Lignes</span>
+            <label class="toggle-container" title="Lignes">
+                <span class="text-[10px] font-bold opacity-70 mr-1">LIGNES</span>
                 <input type="checkbox" id="lines-toggle" class="toggle-checkbox" checked
                     onchange="toggleWireframes(this.checked)">
                 <div class="toggle-switch"></div>
@@ -87,33 +86,56 @@
         </div>
 
         <div style="flex-grow:1"></div>
-        <button class="btn btn-danger mr-2" onclick="toutEffacer()">🗑️</button>
-        <button class="btn btn-warning" onclick="ouvrirModalImport()">📂 Import</button>
+
+        <!-- Global Actions -->
+        <button class="btn btn-danger mr-2 px-3" onclick="toutEffacer()" title="Tout Effacer">🗑️</button>
+        <button class="btn btn-secondary mr-2" onclick="ouvrirModalImport()" title="Importer">📂</button>
+        <button class="btn btn-success" onclick="exporterCode()" title="Exporter">💾</button>
     </div>
 
-    <!-- PANEL ARBORESCENCE (GAUCHE) -->
-    <div id="ui-tree-panel" class="shadow-xl">
-        <div id="tree-toggle-btn" class="hover:bg-gray-600 transition-colors">◀</div>
-        <div id="tree-header" class="flex justify-between items-center">
-            <span>Objets</span>
-            <span id="obj-count" class="bg-gray-700 px-2 py-0.5 rounded text-xs">0</span>
+    <!-- PANEL ARBORESCENCE (GAUCHE - Floating) -->
+    <div id="ui-tree-panel" class="panel-glass">
+        <div id="tree-toggle-btn" class="tree-toggle" onclick="toggleTreePanel()">◀</div>
+
+        <script>
+            // Simple toggle script for the tree panel since it's UI logic
+            function toggleTreePanel() {
+                const panel = document.getElementById('ui-tree-panel');
+                const btn = document.getElementById('tree-toggle-btn');
+                panel.classList.toggle('collapsed');
+                if (panel.classList.contains('collapsed')) {
+                    btn.innerText = '▶';
+                } else {
+                    btn.innerText = '◀';
+                }
+            }
+        </script>
+
+        <div id="tree-header">
+            <span>OBJETS SCÈNE</span>
+            <span id="obj-count" class="bg-indigo-600 px-2 py-0.5 rounded text-xs">0</span>
         </div>
-        <div id="tree-list"></div>
+        <div id="tree-list">
+            <!-- Tree items injected here by JS -->
+        </div>
     </div>
 
-    <!-- PANEL PROPRIETES (DROITE) -->
-    <div id="ui-sidebar" class="shadow-xl">
-        <h2 class="text-xl font-bold mb-2">Propriétés</h2>
-        <div id="no-selection" class="text-gray-500 italic text-sm">Sélectionnez un objet ou utilisez Shift+Clic pour
-            plusieurs.</div>
+    <!-- PANEL PROPRIETES (DROITE - Floating) -->
+    <div id="ui-sidebar" class="panel-glass">
+        <h2 class="text-lg font-bold mb-4 border-b border-gray-700 pb-2">Propriétés</h2>
 
-        <div id="object-properties" style="display:none;" class="flex flex-col gap-4">
-            <div class="bg-blue-900/30 p-2 rounded border border-blue-800 text-sm">
-                <span id="selection-count" class="font-bold text-blue-400">1</span> objet(s) sélectionné(s)
+        <div id="no-selection" class="text-gray-500 italic text-sm text-center mt-10">
+            Aucun objet sélectionné.<br>Cliquez sur un objet pour l'éditer.
+        </div>
+
+        <div id="object-properties" style="display:none;" class="flex flex-col gap-5">
+            <div class="bg-indigo-900/40 p-3 rounded border border-indigo-500/50 text-sm flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                <span id="selection-count" class="font-bold text-white">1</span> sélectionné(s)
             </div>
 
             <div class="control-group" id="group-name">
-                <span class="control-label">Nom</span>
+                <label class="control-label">Nom de l'objet</label>
                 <input type="text" id="input-name" onchange="majNom(this.value)">
             </div>
 
@@ -123,35 +145,52 @@
 
             <div class="control-group">
                 <label class="control-label mb-2">Position (Globale)</label>
-                <div class="coord-row"><span class="coord-label text-red-500">X</span><input type="number" step="0.1"
-                        id="pos-x" onchange="majPositionParInput()"></div>
-                <div class="coord-row"><span class="coord-label text-green-500">Y</span><input type="number" step="0.1"
-                        id="pos-y" onchange="majPositionParInput()"></div>
-                <div class="coord-row"><span class="coord-label text-blue-500">Z</span><input type="number" step="0.1"
-                        id="pos-z" onchange="majPositionParInput()"></div>
+                <div class="coord-row">
+                    <span class="coord-label text-red-500">X</span>
+                    <input type="number" step="0.5" id="pos-x" onchange="majPositionParInput()">
+                </div>
+                <div class="coord-row">
+                    <span class="coord-label text-green-500">Y</span>
+                    <input type="number" step="0.5" id="pos-y" onchange="majPositionParInput()">
+                </div>
+                <div class="coord-row">
+                    <span class="coord-label text-blue-500">Z</span>
+                    <input type="number" step="0.5" id="pos-z" onchange="majPositionParInput()">
+                </div>
             </div>
 
             <div class="control-group">
                 <label class="control-label">Couleur</label>
-                <input type="color" id="input-color" oninput="majCouleur(this.value)">
+                <div style="position:relative; height: 36px">
+                    <input type="color" id="input-color" oninput="majCouleur(this.value)"
+                        style="position: absolute; top:0; left:0; width:100%; height:100%; opacity: 0;">
+                    <div id="color-preview"
+                        style="width: 100%; height: 100%; background: #fff; border-radius: 4px; pointer-events: none;">
+                    </div>
+                </div>
+                <!-- Little script to update the preview because input color is hidden -->
+                <script>
+                    const colInput = document.getElementById('input-color');
+                    const colPrev = document.getElementById('color-preview');
+                    colInput.addEventListener('input', (e) => colPrev.style.background = e.target.value);
+                    // Initial update handled by main.js logic ideally, but good to have listener
+                </script>
             </div>
 
-            <button class="btn btn-danger w-full" onclick="supprimerSelection()">Supprimer (Suppr)</button>
+            <button class="btn btn-danger w-full mt-auto" onclick="supprimerSelection()">Supprimer</button>
         </div>
 
         <div style="flex-grow: 1;"></div>
-        <div class="control-group border-t border-gray-600 pt-4">
-            <button class="btn btn-success w-full" onclick="exporterCode()">💾 Exporter Code</button>
-        </div>
+        <!-- Export button removed from here -->
     </div>
 
     <!-- MODAL IMPORT -->
     <div id="modal-import" class="backdrop-blur-sm">
-        <div class="modal-content shadow-2xl">
-            <h3 class="text-xl font-bold">Importer du Code</h3>
-            <p class="text-sm text-gray-400">Collez une fonction JS ou un script Three.js.</p>
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-2">Importer du Code</h3>
+            <p class="text-sm text-gray-400 mb-4">Collez une fonction JS ou un script Three.js.</p>
             <textarea id="import-area" placeholder="// function maVoiture() { ... }"></textarea>
-            <div class="flex gap-2 justify-end">
+            <div class="flex gap-2 justify-end mt-4">
                 <button class="btn btn-secondary" onclick="fermerModalImport()">Annuler</button>
                 <button class="btn btn-success" onclick="executerImport()">Importer</button>
             </div>
@@ -160,11 +199,10 @@
 
     <!-- MODAL EXPORT -->
     <div id="modal-export" class="backdrop-blur-sm" style="display:none;">
-        <div class="modal-content shadow-2xl">
-            <h3 class="text-xl font-bold">Exporter le Code</h3>
-            <p class="text-sm text-gray-400">Copiez ce code et utilisez-le dans votre projet.</p>
-            <textarea id="export-area" readonly
-                style="height: 300px; font-family: monospace; font-size: 12px; margin-top: 10px;"></textarea>
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-2">Exporter le Code</h3>
+            <p class="text-sm text-gray-400 mb-4">Copiez ce code et utilisez-le dans votre projet.</p>
+            <textarea id="export-area" readonly></textarea>
             <div class="flex gap-2 justify-end mt-4">
                 <button class="btn btn-secondary" onclick="fermerModalExport()">Fermer</button>
                 <button class="btn btn-success" onclick="copierExport()">Copier</button>

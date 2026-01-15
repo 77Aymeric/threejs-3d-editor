@@ -119,7 +119,7 @@ export function importRecursif(root) {
         // Clone material to keep colors
         const newMat = mat.clone();
 
-        const objName = m.name || (m.userData && m.userData.name) || 'import';
+        const objName = m.name || (m.userData && m.userData.name) || 'imported';
         const obj = creerObjet(geo, type, objName, newMat, { position: p, quaternion: q, scale: s });
         nouveauxObjets.push(obj);
     });
@@ -155,52 +155,126 @@ export function exporterCode() {
     degrouperSelection();
 
     let js = "export function creerModele() {\n";
-    js += "    const group = new THREE.Group();\n";
+    js += "    const group = new THREE.Group();\n\n";
 
-    state.objetsEditables.forEach((obj, i) => {
-        const p = obj.position, r = obj.rotation, s = obj.scale;
-        let hexVal = obj.material.color.getHex();
-        if (!state.showColors && obj.userData.savedColor !== undefined) { hexVal = obj.userData.savedColor; }
-        const c = '0x' + hexVal.toString(16).padStart(6, '0');
-        const t = obj.userData.type;
-        const n = obj.name.replace(/[^a-zA-Z0-9]/g, '_') || 'obj' + i;
+    // 1. Analyser les ressources uniques (Géométries et Matériaux)
+    const geometries = new Map(); // key -> { varName, code }
+    const materials = new Map();  // colorHex -> varName
 
-        let geometryCode;
-        if (t === 'BoxGeometry') {
-            geometryCode = 'new THREE.BoxGeometry(1, 1, 1)';
-        } else if (t === 'SphereGeometry') {
-            geometryCode = 'new THREE.SphereGeometry(0.5, 32, 32)';
-        } else if (t === 'CylinderGeometry') {
+    let geoCounter = 0;
+    let matCounter = 0;
+
+    const getGeometryKey = (obj) => {
+        // En cas de clone, obj.geometry.type peut être générique, on se fie à userData.type s'il existe
+        const type = obj.userData.type || obj.geometry.type;
+        if (type.includes('Cylinder') || type.includes('Cone')) {
             const segs = obj.geometry.parameters && obj.geometry.parameters.radialSegments ? obj.geometry.parameters.radialSegments : 32;
-            geometryCode = `new THREE.CylinderGeometry(0.5, 0.5, 1, ${segs})`;
-        } else if (t === 'ConeGeometry') {
-            const segs = obj.geometry.parameters && obj.geometry.parameters.radialSegments ? obj.geometry.parameters.radialSegments : 32;
-            geometryCode = `new THREE.ConeGeometry(0.5, 1, ${segs})`;
-        } else if (t === 'RingGeometry') {
-            geometryCode = 'new THREE.RingGeometry(0.2, 0.5, 32)';
-        } else if (t === 'PlaneGeometry') {
-            geometryCode = 'new THREE.PlaneGeometry(1, 1)';
-        } else {
-            geometryCode = 'new THREE.BoxGeometry(1, 1, 1)';
+            return `${type}_${segs}`;
+        }
+        return type;
+    };
+
+    const getGeometryCode = (type, key) => {
+        if (type.includes('Box')) return 'new THREE.BoxGeometry(1, 1, 1)';
+        if (type.includes('Sphere')) return 'new THREE.SphereGeometry(0.5, 32, 32)';
+        if (type.includes('Plane')) return 'new THREE.PlaneGeometry(1, 1)';
+        if (type.includes('Ring')) return 'new THREE.RingGeometry(0.2, 0.5, 32)';
+        if (type.includes('Cylinder')) {
+            const segs = key.split('_')[1] || 32;
+            return `new THREE.CylinderGeometry(0.5, 0.5, 1, ${segs})`;
+        }
+        if (type.includes('Cone')) {
+            const segs = key.split('_')[1] || 32;
+            return `new THREE.ConeGeometry(0.5, 1, ${segs})`;
+        }
+        return 'new THREE.BoxGeometry(1, 1, 1)';
+    };
+
+    // Collecter les ressources
+    state.objetsEditables.forEach(obj => {
+        // Matériau (MeshToonMaterial)
+        if (obj.material && obj.material.color) {
+            let hexVal = obj.material.color.getHex();
+            if (!state.showColors && obj.userData.savedColor !== undefined) { hexVal = obj.userData.savedColor; }
+            const colorKey = hexVal;
+
+            if (!materials.has(colorKey)) {
+                matCounter++;
+                const varName = `mat${matCounter}`;
+                materials.set(colorKey, varName);
+            }
         }
 
-        js += `
-    // ${n}
-    {
-        const g = ${geometryCode};
-        const m = new THREE.MeshToonMaterial({ color: ${c} });
-        const o = new THREE.Mesh(g, m);
-        o.position.set(${p.x.toFixed(3)}, ${p.y.toFixed(3)}, ${p.z.toFixed(3)});
-        o.rotation.set(${r.x.toFixed(3)}, ${r.y.toFixed(3)}, ${r.z.toFixed(3)});
-        o.scale.set(${s.x.toFixed(3)}, ${s.y.toFixed(3)}, ${s.z.toFixed(3)});
-        o.castShadow = true; 
-        o.receiveShadow = true;
-        
-        const edges = new THREE.EdgesGeometry(g);
-        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 }));
-        o.add(line);
-        group.add(o);
-    }\n`;
+        // Géométrie
+        if (obj.geometry) {
+            const type = obj.userData.type || obj.geometry.type;
+            const geoKey = getGeometryKey(obj);
+            if (!geometries.has(geoKey)) {
+                geoCounter++;
+                const varName = `geo${geoCounter}`;
+                geometries.set(geoKey, {
+                    varName: varName,
+                    code: getGeometryCode(type, geoKey)
+                });
+            }
+        }
+    });
+
+    // 2. Générer les définitions
+    js += "    // Géométries partagées\n";
+    geometries.forEach((value, key) => {
+        js += `    const ${value.varName} = ${value.code};\n`;
+        js += `    const edges_${value.varName} = new THREE.EdgesGeometry(${value.varName});\n`;
+    });
+    js += "\n";
+
+    js += "    // Matériaux partagés\n";
+    materials.forEach((varName, colorVal) => {
+        const c = '0x' + colorVal.toString(16).padStart(6, '0');
+        js += `    const ${varName} = new THREE.MeshToonMaterial({ color: ${c} });\n`;
+    });
+    js += "\n";
+
+    // Matériau pour les arêtes (commun)
+    js += "    const matEdges = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });\n\n";
+
+    // Helper compact
+    js += "    const add = (g, m, e, p, s, r) => {\n";
+    js += "        const o = new THREE.Mesh(g, m);\n";
+    js += "        if (p) o.position.set(p[0], p[1], p[2]);\n";
+    js += "        if (s) o.scale.set(s[0], s[1], s[2]);\n";
+    js += "        if (r) o.rotation.set(r[0], r[1], r[2]);\n";
+    js += "        o.castShadow = true; o.receiveShadow = true;\n";
+    js += "        o.add(new THREE.LineSegments(e, matEdges));\n";
+    js += "        group.add(o);\n";
+    js += "    };\n\n";
+
+    // 3. Générer les objets
+    state.objetsEditables.forEach((obj, i) => {
+        const p = obj.position, r = obj.rotation, s = obj.scale;
+
+        let hexVal = 0xffffff;
+        if (obj.material && obj.material.color) {
+            hexVal = obj.material.color.getHex();
+            if (!state.showColors && obj.userData.savedColor !== undefined) { hexVal = obj.userData.savedColor; }
+        }
+
+        const matVar = materials.get(hexVal) || 'new THREE.MeshBasicMaterial({ color: 0xff00ff })';
+        const geoKey = getGeometryKey(obj);
+        const geoEntry = geometries.get(geoKey);
+        const geoVar = geoEntry ? geoEntry.varName : 'new THREE.BoxGeometry(1,1,1)';
+        const edgesVar = geoEntry ? `edges_${geoEntry.varName}` : `new THREE.EdgesGeometry(${geoVar})`;
+
+        const x = parseFloat(p.x.toFixed(3)), y = parseFloat(p.y.toFixed(3)), z = parseFloat(p.z.toFixed(3));
+        const sx = parseFloat(s.x.toFixed(3)), sy = parseFloat(s.y.toFixed(3)), sz = parseFloat(s.z.toFixed(3));
+        const rx = parseFloat(r.x.toFixed(3)), ry = parseFloat(r.y.toFixed(3)), rz = parseFloat(r.z.toFixed(3));
+
+        let args = `${geoVar}, ${matVar}, ${edgesVar}, [${x}, ${y}, ${z}], [${sx}, ${sy}, ${sz}]`;
+        if (rx !== 0 || ry !== 0 || rz !== 0) {
+            args += `, [${rx}, ${ry}, ${rz}]`;
+        }
+
+        js += `    add(${args});\n`;
     });
 
     js += "    return group;\n";

@@ -57,7 +57,8 @@ function activerRenommageTree(span, obj) {
     const input = document.createElement('input');
     input.type = 'text';
     input.value = obj.name;
-    input.className = 'text-black px-1 rounded h-6 text-sm w-full';
+    // Removed text-black, added proper padding/rounded. Inherits global input styles (white text, dark bg)
+    input.className = 'px-1 rounded h-6 text-sm w-full';
     const valider = () => {
         obj.name = input.value || obj.name;
         renderTree();

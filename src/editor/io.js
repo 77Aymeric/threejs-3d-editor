@@ -15,11 +15,24 @@ export function executerImport() {
     let code = document.getElementById('import-area').value.trim();
     if (!code) return;
 
-    // Supprimer 'export' ou 'export default' au début si présent
-    code = code.replace(/^(export\s+default\s+|export\s+)/, '');
+    // 1. Identifier la fonction exportée comme point d'entrée prioritaire
+    let entryPoint = null;
+    const exportMatch = code.match(/export\s+(?:default\s+)?function\s+([a-zA-Z0-9_$]+)/);
+    if (exportMatch) entryPoint = exportMatch[1];
 
-    const match = code.match(/function\s+([a-zA-Z0-9_$]+)\s*\(/);
-    if (match && code.endsWith('}')) code += `\nreturn ${match[1]}();`;
+    // 2. Supprimer les mots-clés export pour la compatibilité new Function
+    code = code.replace(/export\s+default\s+/g, '').replace(/export\s+/g, '');
+
+    // 3. Si pas d'export explicite, prendre la première fonction
+    if (!entryPoint) {
+        const match = code.match(/function\s+([a-zA-Z0-9_$]+)\s*\(/);
+        if (match) entryPoint = match[1];
+    }
+
+    // 4. Ajouter l'appel final
+    if (entryPoint) {
+        code += `\nreturn ${entryPoint}();`;
+    }
     try {
         const func = new Function('THREE', code);
         const res = func(THREE);

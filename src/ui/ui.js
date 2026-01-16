@@ -143,6 +143,15 @@ export function updateUIFromSelection() {
         const inputColor = document.getElementById('input-color');
         if (inputColor) inputColor.value = '#' + hexStr;
     }
+
+    // Update Opacity
+    if (state.selectionActuelle[0].material) {
+        const op = state.selectionActuelle[0].material.opacity;
+        const inputOpacity = document.getElementById('input-opacity');
+        const valOpacity = document.getElementById('opacity-val');
+        if (inputOpacity) inputOpacity.value = op;
+        if (valOpacity) valOpacity.innerText = op.toFixed(1);
+    }
 }
 
 export function majNom(val) {
@@ -170,6 +179,23 @@ export function majCouleur(val) {
         } else {
             obj.material.color.setHex(hexVal);
             obj.userData.savedColor = hexVal;
+        }
+    });
+}
+
+export function majOpacite(val) {
+    const opacity = parseFloat(val);
+    document.getElementById('opacity-val').innerText = opacity.toFixed(1);
+    state.selectionActuelle.forEach(obj => {
+        if (obj.material) {
+            obj.material.transparent = opacity < 1.0;
+            obj.material.opacity = opacity;
+            // Also update any child lines if we want them to fade too? 
+            // Usually lines have their own material. For now, let's keep lines separate or matching?
+            // The user request was "elements transparents", so mainly the mesh.
+
+            // If the object has a "savedOpacity" we could update it too
+            obj.userData.savedOpacity = opacity;
         }
     });
 }

@@ -83,6 +83,7 @@ export function dupliquerSelection() {
 
         clone.userData = { type: original.userData.type, id: Date.now() + Math.random() };
         if (original.userData.savedColor) clone.userData.savedColor = original.userData.savedColor;
+        if (original.userData.savedOpacity !== undefined) clone.userData.savedOpacity = original.userData.savedOpacity;
         clone.name = original.name + "_copy";
 
         state.scene.add(clone);

@@ -4,7 +4,7 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { state } from './editor/state.js';
 import { setupViewCube } from './editor/camera.js';
 import { onWindowResize, onPointerDown, onPointerUp, onPointerMove, onKeyDown, commencerDrag, terminerDrag } from './editor/events.js';
-import { updateUI, renderTree, toggleTree, majNom, majPositionParInput, majCouleur } from './ui/ui.js';
+import { updateUI, renderTree, toggleTree, majNom, majPositionParInput, majCouleur, majOpacite } from './ui/ui.js';
 import { undo, redo } from './editor/history.js';
 import { ajouterAction, dupliquerSelection, supprimerSelection, toutEffacer } from './editor/objects.js';
 import { setMode, toggleSnap, toggleSpace, toggleColors, toggleWireframes } from './editor/utils.js';
@@ -91,6 +91,7 @@ function init() {
     window.majNom = majNom;
     window.majPositionParInput = majPositionParInput;
     window.majCouleur = majCouleur;
+    window.majOpacite = majOpacite;
 
     animate();
     renderTree();

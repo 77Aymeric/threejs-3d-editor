@@ -45,6 +45,12 @@ export function creerObjet(geometry, type, baseName, existingMat, existingTransf
     }
 
     mesh.userData = { type: type, id: Date.now() + Math.random() };
+
+    // Persist geometry parameters for export
+    if (geometry.parameters && geometry.parameters.radialSegments) {
+        mesh.userData.radialSegments = geometry.parameters.radialSegments;
+    }
+
     mesh.name = baseName || "obj_" + mesh.userData.id.toString().slice(-4);
 
     state.scene.add(mesh);
@@ -81,9 +87,16 @@ export function dupliquerSelection() {
         clone.quaternion.copy(q);
         clone.scale.copy(s);
 
-        clone.userData = { type: original.userData.type, id: Date.now() + Math.random() };
+        clone.userData = {
+            type: original.userData.type,
+            id: Date.now() + Math.random()
+        };
+
+        // Copy persistent data
         if (original.userData.savedColor) clone.userData.savedColor = original.userData.savedColor;
         if (original.userData.savedOpacity !== undefined) clone.userData.savedOpacity = original.userData.savedOpacity;
+        if (original.userData.radialSegments) clone.userData.radialSegments = original.userData.radialSegments;
+
         clone.name = original.name + "_copy";
 
         state.scene.add(clone);

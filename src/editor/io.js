@@ -170,7 +170,7 @@ export function exporterCode() {
     let js = "export function creerModele() {\n";
     js += "    const group = new THREE.Group();\n\n";
 
-    // 1. Analyser les ressources uniques (Géométries et Matériaux)
+    // 1. Analyser les ressources uniques
     const geometries = new Map(); // key -> { varName, code }
     const materials = new Map();  // colorHex -> varName
 
@@ -178,10 +178,15 @@ export function exporterCode() {
     let matCounter = 0;
 
     const getGeometryKey = (obj) => {
-        // En cas de clone, obj.geometry.type peut être générique, on se fie à userData.type s'il existe
         const type = obj.userData.type || obj.geometry.type;
         if (type.includes('Cylinder') || type.includes('Cone')) {
-            const segs = obj.geometry.parameters && obj.geometry.parameters.radialSegments ? obj.geometry.parameters.radialSegments : 32;
+            // Priority to persisted userData, fallback to geometry parameters, fallback to default
+            let segs = 32;
+            if (obj.userData.radialSegments !== undefined) {
+                segs = obj.userData.radialSegments;
+            } else if (obj.geometry.parameters && obj.geometry.parameters.radialSegments) {
+                segs = obj.geometry.parameters.radialSegments;
+            }
             return `${type}_${segs}`;
         }
         return type;
@@ -205,17 +210,19 @@ export function exporterCode() {
 
     // Collecter les ressources
     state.objetsEditables.forEach(obj => {
-        // Matériau (MeshToonMaterial)
+        // Matériau
+        let hexVal = 0xffffff;
         if (obj.material && obj.material.color) {
-            let hexVal = obj.material.color.getHex();
-            if (!state.showColors && obj.userData.savedColor !== undefined) { hexVal = obj.userData.savedColor; }
-            const colorKey = hexVal;
+            hexVal = obj.material.color.getHex();
+        }
+        if (!state.showColors && obj.userData.savedColor !== undefined) {
+            hexVal = obj.userData.savedColor;
+        }
 
-            if (!materials.has(colorKey)) {
-                matCounter++;
-                const varName = `mat${matCounter}`;
-                materials.set(colorKey, varName);
-            }
+        const colorKey = hexVal;
+        if (!materials.has(colorKey)) {
+            matCounter++;
+            materials.set(colorKey, `mat${matCounter}`);
         }
 
         // Géométrie
@@ -224,9 +231,8 @@ export function exporterCode() {
             const geoKey = getGeometryKey(obj);
             if (!geometries.has(geoKey)) {
                 geoCounter++;
-                const varName = `geo${geoCounter}`;
                 geometries.set(geoKey, {
-                    varName: varName,
+                    varName: `geo${geoCounter}`,
                     code: getGeometryCode(type, geoKey)
                 });
             }
@@ -248,10 +254,8 @@ export function exporterCode() {
     });
     js += "\n";
 
-    // Matériau pour les arêtes (commun)
     js += "    const matEdges = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });\n\n";
 
-    // Helper compact
     js += "    const add = (g, m, e, p, s, r) => {\n";
     js += "        const o = new THREE.Mesh(g, m);\n";
     js += "        if (p) o.position.set(p[0], p[1], p[2]);\n";
@@ -263,31 +267,43 @@ export function exporterCode() {
     js += "    };\n\n";
 
     // 3. Générer les objets
-    state.objetsEditables.forEach((obj, i) => {
+    state.objetsEditables.forEach(obj => {
         const p = obj.position, r = obj.rotation, s = obj.scale;
 
         let hexVal = 0xffffff;
         if (obj.material && obj.material.color) {
             hexVal = obj.material.color.getHex();
-            if (!state.showColors && obj.userData.savedColor !== undefined) { hexVal = obj.userData.savedColor; }
+        }
+        if (!state.showColors && obj.userData.savedColor !== undefined) {
+            hexVal = obj.userData.savedColor;
         }
 
-        const matVar = materials.get(hexVal) || 'new THREE.MeshBasicMaterial({ color: 0xff00ff })';
+        const matVar = materials.get(hexVal) || 'mat1'; // fallback safe
         const geoKey = getGeometryKey(obj);
         const geoEntry = geometries.get(geoKey);
-        const geoVar = geoEntry ? geoEntry.varName : 'new THREE.BoxGeometry(1,1,1)';
-        const edgesVar = geoEntry ? `edges_${geoEntry.varName}` : `new THREE.EdgesGeometry(${geoVar})`;
 
-        const x = parseFloat(p.x.toFixed(3)), y = parseFloat(p.y.toFixed(3)), z = parseFloat(p.z.toFixed(3));
-        const sx = parseFloat(s.x.toFixed(3)), sy = parseFloat(s.y.toFixed(3)), sz = parseFloat(s.z.toFixed(3));
-        const rx = parseFloat(r.x.toFixed(3)), ry = parseFloat(r.y.toFixed(3)), rz = parseFloat(r.z.toFixed(3));
+        let geoVar = 'geo1';
+        let edgesVar = 'edges_geo1';
 
-        let args = `${geoVar}, ${matVar}, ${edgesVar}, [${x}, ${y}, ${z}], [${sx}, ${sy}, ${sz}]`;
-        if (rx !== 0 || ry !== 0 || rz !== 0) {
-            args += `, [${rx}, ${ry}, ${rz}]`;
+        if (geoEntry) {
+            geoVar = geoEntry.varName;
+            edgesVar = `edges_${geoEntry.varName}`;
         }
 
-        js += `    add(${args});\n`;
+        // Format values
+        // Helper to format floats nicely
+        const f = (n) => parseFloat(n.toFixed(3));
+
+        const posStr = `[${f(p.x)}, ${f(p.y)}, ${f(p.z)}]`;
+        const scaleStr = `[${f(s.x)}, ${f(s.y)}, ${f(s.z)}]`;
+
+        // Rotation only if needed
+        let rotStr = "";
+        if (Math.abs(r.x) > 0.001 || Math.abs(r.y) > 0.001 || Math.abs(r.z) > 0.001) {
+            rotStr = `, [${f(r.x)}, ${f(r.y)}, ${f(r.z)}]`;
+        }
+
+        js += `    add(${geoVar}, ${matVar}, ${edgesVar}, ${posStr}, ${scaleStr}${rotStr});\n`;
     });
 
     js += "    return group;\n";
